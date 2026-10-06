@@ -74,6 +74,11 @@ function launch {
 
   # submodule package symlinks for PYTHONPATH imports on device.
   # on PC these come from editable installs via pyproject.toml / uv.
+  if [ ! -d "$DIR/opendbc_repo/opendbc" ]; then
+    echo "Submodules missing, initializing..."
+    git submodule update --init --recursive
+  fi
+
   ln -sfn msgq_repo/msgq msgq
   ln -sfn opendbc_repo/opendbc opendbc
   ln -sfn rednose_repo/rednose rednose
