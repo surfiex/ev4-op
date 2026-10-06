@@ -219,7 +219,12 @@ class CarState(CarStateBase):
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
 
     ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
-    ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
+    if len(cp.vl_all["DOORS_SEATBELTS_ALT"]["DRIVER_SEATBELT"]):
+      ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS_ALT"]["DRIVER_SEATBELT"] == 0
+    elif len(cp.vl_all["DOORS_SEATBELTS"]["DRIVER_SEATBELT"]):
+      ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
+    else:
+      ret.seatbeltUnlatched = False
 
     gear = cp.vl[self.gear_msg_canfd]["GEAR"]
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
@@ -301,6 +306,7 @@ class CarState(CarStateBase):
   def get_can_parsers_canfd(self, CP):
     msgs = [
       ("DOORS_SEATBELTS", float('nan')),
+      ("DOORS_SEATBELTS_ALT", float('nan')),
       ("BLINKERS", float('nan')),
       ("BLINKER_STALKS", float('nan')),
     ]
