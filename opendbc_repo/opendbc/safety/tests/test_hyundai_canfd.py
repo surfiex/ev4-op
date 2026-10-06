@@ -181,6 +181,29 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
   GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
 
 
+class TestHyundaiCanfdLKASteeringAltButtonsEV(TestHyundaiCanfdLKASteeringAltEV):
+
+  SAFETY_PARAM = HyundaiSafetyFlags.CANFD_LKA_STEER_MSG | HyundaiSafetyFlags.EV_GAS | \
+                 HyundaiSafetyFlags.CANFD_LKA_STEER_MSG_ALT | HyundaiSafetyFlags.CANFD_ALT_BUTTONS
+
+  def _button_msg(self, buttons, main_button=0, bus=1):
+    values = {
+      "CRUISE_BUTTONS": buttons,
+      "ADAPTIVE_CRUISE_MAIN_BTN": main_button,
+    }
+    return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT", self.PT_BUS, values)
+
+  def test_button_sends(self):
+    """
+      No button send allowed with alt buttons.
+    """
+    for enabled in (True, False):
+      for btn in range(8):
+        self.safety.set_controls_allowed(enabled)
+        self.assertFalse(self._tx(self._button_msg(btn)))
+
+
+
 class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanfdLKASteeringEV):
 
   SAFETY_PARAM = HyundaiSafetyFlags.CANFD_LKA_STEER_MSG | HyundaiSafetyFlags.LONG | HyundaiSafetyFlags.EV_GAS
