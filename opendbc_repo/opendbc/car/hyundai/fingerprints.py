@@ -1054,8 +1054,10 @@ FW_VERSIONS = {
   },
   CAR.KIA_EV4: {
     (Ecu.fwdRadar, 0x7d0, None): [
+      b'\xf1\x00CT1__               1.00 1.01 99110EZ000          ',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
+      b'\xf1\x00CT11.011.031.012551000HKP_CT125_50430099211EZ000',
     ],
   },
   CAR.HYUNDAI_IONIQ_5: {
