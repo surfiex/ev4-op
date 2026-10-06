@@ -286,7 +286,15 @@ class CarState(CarStateBase):
     prev_main_buttons = self.main_buttons[-1]
     prev_lda_button = self.lda_button
     self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
-    self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
+    if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
+      main_btns = [bool(a or n) for a, n in zip(
+        cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"],
+        cp.vl_all[self.cruise_btns_msg_canfd]["NORMAL_CRUISE_MAIN_BTN"],
+        strict=False
+      )]
+      self.main_buttons.extend(main_btns)
+    else:
+      self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
     self.lda_button = cp.vl[self.cruise_btns_msg_canfd]["LDA_BTN"]
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
@@ -310,7 +318,11 @@ class CarState(CarStateBase):
       ("BLINKERS", float('nan')),
       ("BLINKER_STALKS", float('nan')),
     ]
-    if not (CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
+    if CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
+      msgs += [
+        ("CRUISE_BUTTONS_ALT", 1)
+      ]
+    else:
       # TODO: this can be removed once we add dynamic support to vl_all
       msgs += [
         # this message is 50Hz but the ECU frequently stops transmitting for ~0.5s
