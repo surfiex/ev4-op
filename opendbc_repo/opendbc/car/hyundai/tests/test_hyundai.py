@@ -18,6 +18,7 @@ Ecu = CarParams.Ecu
 # For now, assert list of expected missing date cars
 NO_DATES_PLATFORMS = {
   # CAN FD
+  CAR.KIA_EV4,
   CAR.KIA_SPORTAGE_5TH_GEN,
   CAR.HYUNDAI_SANTA_CRUZ_1ST_GEN,
   CAR.HYUNDAI_TUCSON_4TH_GEN,
