@@ -47,6 +47,7 @@
 
 static bool hyundai_canfd_alt_buttons = false;
 static bool hyundai_canfd_lka_steer_msg_alt = false;
+static bool hyundai_canfd_ev_alt_counter = false;
 
 static unsigned int hyundai_canfd_get_lka_addr(void) {
   return hyundai_canfd_lka_steer_msg_alt ? 0x110U : 0x50U;
@@ -58,6 +59,9 @@ static uint8_t hyundai_canfd_get_counter(const CANPacket_t *msg) {
     ret = msg->data[1] >> 4;
   } else {
     ret = msg->data[2];
+    if (hyundai_canfd_ev_alt_counter && (msg->addr == 0x35U)) {
+      ret = ret >> 1;
+    }
   }
   return ret;
 }
@@ -214,6 +218,7 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
 static safety_config hyundai_canfd_init(uint16_t param) {
   const uint16_t HYUNDAI_PARAM_CANFD_LKA_STEER_MSG_ALT = 128;
   const uint16_t HYUNDAI_PARAM_CANFD_ALT_BUTTONS = 32;
+  const uint16_t HYUNDAI_PARAM_CANFD_EV_ALT_COUNTER = 1024;
 
   static const CanMsg HYUNDAI_CANFD_LKA_STEER_MSG_TX_MSGS[] = {
     HYUNDAI_CANFD_LKA_STEER_MSG_COMMON_TX_MSGS(0, 1)
@@ -263,6 +268,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
   gen_crc_lookup_table_16(0x1021, hyundai_canfd_crc_lut);
   hyundai_canfd_alt_buttons = GET_FLAG(param, HYUNDAI_PARAM_CANFD_ALT_BUTTONS);
   hyundai_canfd_lka_steer_msg_alt = GET_FLAG(param, HYUNDAI_PARAM_CANFD_LKA_STEER_MSG_ALT);
+  hyundai_canfd_ev_alt_counter = GET_FLAG(param, HYUNDAI_PARAM_CANFD_EV_ALT_COUNTER);
 
   safety_config ret;
   if (hyundai_longitudinal) {
