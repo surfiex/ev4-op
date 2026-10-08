@@ -30,7 +30,8 @@ class CarState(CarStateBase):
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.lda_button = 0
 
-    self.gear_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
+    self.gear_msg_canfd = "GEAR_SHIFTER" if CP.carFingerprint == CAR.KIA_EV4 else \
+                          "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                           "GEAR_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS else \
                           "GEAR_ALT_2" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS_2 else \
                           "GEAR_SHIFTER"
@@ -218,10 +219,11 @@ class CarState(CarStateBase):
 
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
 
-    ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
     if self.CP.carFingerprint == CAR.KIA_EV4:
+      ret.doorOpen = cp.vl["DOORS_ALT"]["DRIVER_DOOR"] == 1
       ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS_ALT"]["DRIVER_SEATBELT"] == 0
     else:
+      ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
       ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
 
     gear = cp.vl[self.gear_msg_canfd]["GEAR"]
