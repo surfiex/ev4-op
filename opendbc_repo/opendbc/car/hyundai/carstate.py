@@ -219,12 +219,10 @@ class CarState(CarStateBase):
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
 
     ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
-    if len(cp.vl_all["DOORS_SEATBELTS_ALT"]["DRIVER_SEATBELT"]):
+    if self.CP.carFingerprint == CAR.KIA_EV4:
       ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS_ALT"]["DRIVER_SEATBELT"] == 0
-    elif len(cp.vl_all["DOORS_SEATBELTS"]["DRIVER_SEATBELT"]):
-      ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
     else:
-      ret.seatbeltUnlatched = False
+      ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
 
     gear = cp.vl[self.gear_msg_canfd]["GEAR"]
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
@@ -246,8 +244,7 @@ class CarState(CarStateBase):
     ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > self.params.STEER_THRESHOLD, 5)
     ret.steerFaultTemporary = cp.vl["MDPS"]["MDPS_LkaFailSta"] != 0
 
-    # Check blinker stalk or lamp signals
-    if len(cp.vl_all["BLINKER_STALKS"]["LEFT_BLINKER"]):
+    if self.CP.carFingerprint == CAR.KIA_EV4:
       ret.leftBlinker = bool(cp.vl["BLINKER_STALKS"]["LEFT_BLINKER"])
       ret.rightBlinker = bool(cp.vl["BLINKER_STALKS"]["RIGHT_BLINKER"])
     else:
@@ -312,12 +309,7 @@ class CarState(CarStateBase):
     return ret
 
   def get_can_parsers_canfd(self, CP):
-    msgs = [
-      ("DOORS_SEATBELTS", float('nan')),
-      ("DOORS_SEATBELTS_ALT", float('nan')),
-      ("BLINKERS", float('nan')),
-      ("BLINKER_STALKS", float('nan')),
-    ]
+    msgs = []
     if CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
       msgs += [
         ("CRUISE_BUTTONS_ALT", 1)
