@@ -312,6 +312,11 @@ class CarState(CarStateBase):
 
   def get_can_parsers_canfd(self, CP):
     msgs = []
+    if CP.flags & HyundaiFlags.HAS_BSM:
+      msgs += [
+        ("ADAS_CMD_50_50ms", float('nan')),
+      ]
+
     if CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
       msgs += [
         ("CRUISE_BUTTONS_ALT", 1)
