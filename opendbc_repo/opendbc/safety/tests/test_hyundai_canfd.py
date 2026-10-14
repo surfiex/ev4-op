@@ -110,6 +110,22 @@ class TestHyundaiCanfdLFASteering(TestHyundaiCanfdLFASteeringBase):
   pass
 
 
+class TestHyundaiCanfdLFASteeringAltButtons2(TestHyundaiCanfdLFASteeringBase):
+
+  GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
+  SCC_BUS = 2
+  EXTRA_SAFETY_PARAM = HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CAMERA_SCC
+
+  def _button_msg(self, buttons, main_button=0, bus=None):
+    if bus is not None:
+      return super()._button_msg(buttons, main_button, bus)
+    values = {
+      "CRUISE_BUTTONS": buttons,
+      "ADAPTIVE_CRUISE_MAIN_BTN": main_button,
+    }
+    return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT_2", self.PT_BUS, values)
+
+
 class TestHyundaiCanfdLFASteeringAltButtonsBase(TestHyundaiCanfdLFASteeringBase):
 
   EXTRA_SAFETY_PARAM: int

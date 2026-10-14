@@ -26,7 +26,7 @@
 // *** Addresses checked in rx hook ***
 // EV, ICE, HYBRID: ACCELERATOR (0x35), ACCELERATOR_BRAKE_ALT (0x100), ACCELERATOR_ALT (0x105)
 #define HYUNDAI_CANFD_COMMON_RX_CHECKS(pt_bus)                                                                          \
-  {.msg = {{0x35, (pt_bus), 32, 100U, .max_counter = 0xffU, .ignore_quality_flag = true},                  \
+  {.msg = {{0x35, (pt_bus), 32, 50U, .ignore_counter = true, .ignore_quality_flag = true},                   \
            {0x100, (pt_bus), 32, 100U, .max_counter = 0xffU, .ignore_quality_flag = true},                 \
            {0x105, (pt_bus), 32, 100U, .max_counter = 0xffU, .ignore_quality_flag = true}}},               \
   {.msg = {{0x175, (pt_bus), 24, 50U, .max_counter = 0xffU, .ignore_quality_flag = true}, { 0 }, { 0 }}},  \
@@ -35,7 +35,8 @@
 
 #define HYUNDAI_CANFD_STD_BUTTONS_RX_CHECKS(pt_bus)                                                                                            \
   HYUNDAI_CANFD_COMMON_RX_CHECKS(pt_bus)                                                                                                       \
-  {.msg = {{0x1cf, (pt_bus), 8, 50U, .ignore_checksum = true, .max_counter = 0xfU, .ignore_quality_flag = true}, { 0 }, { 0 }}},  \
+  {.msg = {{0x1cf, (pt_bus), 8, 50U, .ignore_checksum = true, .max_counter = 0xfU, .ignore_quality_flag = true},                               \
+           {0x10b, (pt_bus), 16, 25U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }}},                  \
 
 #define HYUNDAI_CANFD_ALT_BUTTONS_RX_CHECKS(pt_bus)                                                                                              \
   HYUNDAI_CANFD_COMMON_RX_CHECKS(pt_bus)                                                                                                         \
@@ -79,18 +80,23 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *msg) {
   }
 
   // cruise buttons
-  const unsigned int button_addr = hyundai_canfd_alt_buttons ? 0x1aaU : 0x1cfU;
-  if (msg_matches(msg, button_addr, pt_bus)) {
-    bool main_button = false;
-    int cruise_button = 0;
-    if (msg_matches(msg, 0x1cfU, pt_bus)) {
-      cruise_button = msg->data[2] & 0x7U;
-      main_button = GET_BIT(msg, 19U);
-    } else {
-      cruise_button = (msg->data[4] >> 4) & 0x7U;
-      main_button = GET_BIT(msg, 34U);
+  if (hyundai_canfd_alt_buttons) {
+    if (msg_matches(msg, 0x1aaU, pt_bus)) {
+      int cruise_button = (msg->data[4] >> 4) & 0x7U;
+      bool main_button = GET_BIT(msg, 34U);
+      hyundai_common_cruise_buttons_check(cruise_button, main_button);
     }
-    hyundai_common_cruise_buttons_check(cruise_button, main_button);
+  } else {
+    if (msg_matches(msg, 0x1cfU, pt_bus)) {
+      int cruise_button = msg->data[2] & 0x7U;
+      bool main_button = GET_BIT(msg, 19U);
+      hyundai_common_cruise_buttons_check(cruise_button, main_button);
+    }
+    if (msg_matches(msg, 0x10bU, pt_bus)) {
+      int cruise_button = msg->data[10] & 0x7U;
+      bool main_button = GET_BIT(msg, 83U);
+      hyundai_common_cruise_buttons_check(cruise_button, main_button);
+    }
   }
 
   // gas press, different for EV, hybrid, and ICE models

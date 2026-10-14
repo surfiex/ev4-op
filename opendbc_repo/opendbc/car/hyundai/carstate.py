@@ -50,7 +50,8 @@ class CarState(CarStateBase):
     self.accelerator_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                                  "ACCELERATOR_ALT" if CP.flags & HyundaiFlags.HYBRID else \
                                  "ACCELERATOR_BRAKE_ALT"
-    self.cruise_btns_msg_canfd = "CRUISE_BUTTONS_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS else \
+    self.cruise_btns_msg_canfd = "CRUISE_BUTTONS_ALT_2" if CP.carFingerprint == CAR.KIA_EV4 else \
+                                 "CRUISE_BUTTONS_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS else \
                                  "CRUISE_BUTTONS"
     self.is_metric = False
     self.buttons_counter = 0
@@ -218,8 +219,12 @@ class CarState(CarStateBase):
 
     ret.brakePressed = cp.vl["TCS"]["DriverBraking"] == 1
 
-    ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
-    ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
+    if self.CP.carFingerprint == CAR.KIA_EV4:
+      ret.doorOpen = cp.vl["DOORS_ALT"]["DRIVER_DOOR"] == 1
+      ret.seatbeltUnlatched = cp.vl["SEATBELTS_ALT"]["DRIVER_SEATBELT"] == 0
+    else:
+      ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR"] == 1
+      ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT"] == 0
 
     gear = cp.vl[self.gear_msg_canfd]["GEAR"]
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
@@ -242,11 +247,12 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = cp.vl["MDPS"]["MDPS_LkaFailSta"] != 0
 
     # TODO: alt signal usage may be described by cp.vl['BLINKERS']['USE_ALT_LAMP']
+    blinker_msg = "BLINKERS_ALT" if self.CP.carFingerprint == CAR.KIA_EV4 else "BLINKERS"
     left_blinker_sig, right_blinker_sig = "LEFT_LAMP", "RIGHT_LAMP"
     if self.CP.carFingerprint == CAR.HYUNDAI_KONA_EV_2ND_GEN:
       left_blinker_sig, right_blinker_sig = "LEFT_LAMP_ALT", "RIGHT_LAMP_ALT"
-    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["BLINKERS"][left_blinker_sig],
-                                                                      cp.vl["BLINKERS"][right_blinker_sig])
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl[blinker_msg][left_blinker_sig],
+                                                                      cp.vl[blinker_msg][right_blinker_sig])
     if self.CP.flags & HyundaiFlags.HAS_BSM:
       ret.leftBlindspot = bool(cp.vl["ADAS_CMD_50_50ms"]["BCW_LtIndSta"])
       ret.rightBlindspot = bool(cp.vl["ADAS_CMD_50_50ms"]["BCW_RtIndSta"])
@@ -299,7 +305,7 @@ class CarState(CarStateBase):
       # TODO: this can be removed once we add dynamic support to vl_all
       msgs += [
         # this message is 50Hz but the ECU frequently stops transmitting for ~0.5s
-        ("CRUISE_BUTTONS", 1)
+        (self.cruise_btns_msg_canfd, 1)
       ]
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], msgs, CanBus(CP).ECAN),
