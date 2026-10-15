@@ -245,6 +245,8 @@ class CarState(CarStateBase):
     ret.steeringTorqueEps = cp.vl["MDPS"]["MDPS_OutTqVal"]
     ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > self.params.STEER_THRESHOLD, 5)
     ret.steerFaultTemporary = cp.vl["MDPS"]["MDPS_LkaFailSta"] != 0
+    if self.CP.flags & HyundaiFlags.CANFD_ANGLE_STEERING:
+      ret.steerFaultTemporary |= cp.vl["MDPS"]["MDPS_ADAS_AciFltSig_Lv2"] != 0
 
     # TODO: alt signal usage may be described by cp.vl['BLINKERS']['USE_ALT_LAMP']
     blinker_msg = "BLINKERS_ALT" if self.CP.carFingerprint == CAR.KIA_EV4 else "BLINKERS"

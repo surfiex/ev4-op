@@ -34,10 +34,10 @@ class CarInterface(CarInterfaceBase):
       # that finally retransmits our steering command in LFA or LFA_ALT to the MDPS.
       # "LFA steering" if camera directly sends LFA to the MDPS
       cam_can = CanBus(None, fingerprint).CAM
-      lka_steering = 0x50 in fingerprint[cam_can] or 0x110 in fingerprint[cam_can]
+      lka_steering = (0x50 in fingerprint[cam_can] or 0x110 in fingerprint[cam_can]) and not (ret.flags & HyundaiFlags.CANFD_ANGLE_STEERING)
       CAN = CanBus(None, fingerprint, lka_steering)
 
-      ret.alphaLongitudinalAvailable = not (ret.flags & HyundaiFlags.CANFD_NO_RADAR_DISABLE)
+      ret.alphaLongitudinalAvailable = not (ret.flags & (HyundaiFlags.CANFD_NO_RADAR_DISABLE | HyundaiFlags.CANFD_ANGLE_STEERING))
       if lka_steering and Ecu.adas not in [fw.ecu for fw in car_fw]:
         # this needs to be figured out for cars without an ADAS ECU
         ret.alphaLongitudinalAvailable = False
@@ -83,6 +83,8 @@ class CarInterface(CarInterfaceBase):
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CANFD_ALT_BUTTONS.value
       if ret.flags & HyundaiFlags.CANFD_CAMERA_SCC:
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
+      if ret.flags & HyundaiFlags.CANFD_ANGLE_STEERING:
+        ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CANFD_ANGLE_STEERING.value
 
     else:
       # Shared configuration for non CAN-FD cars
@@ -116,7 +118,10 @@ class CarInterface(CarInterfaceBase):
     ret.centerToFront = ret.wheelbase * 0.4
     ret.steerActuatorDelay = 0.1
     ret.steerLimitTimer = 0.4
-    CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+    if ret.flags & HyundaiFlags.CANFD_ANGLE_STEERING:
+      ret.steerControlType = structs.CarParams.SteerControlType.angle
+    else:
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     if ret.flags & HyundaiFlags.ALT_LIMITS:
       ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.ALT_LIMITS.value

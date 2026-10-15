@@ -4,6 +4,7 @@ from enum import IntFlag
 
 from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms, uds
 from opendbc.car.common.conversions import Conversions as CV
+from opendbc.car.lateral import AngleSteeringLimits
 from opendbc.car.structs import CarParams
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, p16
@@ -14,6 +15,13 @@ Ecu = CarParams.Ecu
 class CarControllerParams:
   ACCEL_MIN = -3.5 # m/s^2
   ACCEL_MAX = 2.0 # m/s^2
+
+  ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
+    # Max angle in DBC is 119.9 deg
+    120,  # deg
+    ([0., 5., 25.], [1.0, 0.8, 0.2]),
+    ([0., 5., 25.], [1.5, 1.0, 0.3]),
+  )
 
   def __init__(self, CP):
     self.STEER_DELTA_UP = 3
@@ -66,6 +74,7 @@ class HyundaiSafetyFlags(IntFlag):
   CANFD_LKA_STEER_MSG_ALT = 128
   FCEV_GAS = 256
   ALT_LIMITS_2 = 512
+  CANFD_ANGLE_STEERING = 1024
 
 
 # Hyundai/Kia/Genesis SCC (Smart Cruise Control) and steering architecture:
@@ -148,6 +157,8 @@ class HyundaiFlags(IntFlag):
   ALT_LIMITS_2 = 2 ** 26
 
   HAS_BSM = 2 ** 27  # blind spot monitoring
+
+  CANFD_ANGLE_STEERING = 2 ** 28
 
 
 @dataclass
@@ -547,7 +558,7 @@ class CAR(Platforms):
   KIA_EV4 = HyundaiCanFDPlatformConfig(
     [HyundaiCarDocs("Kia EV4 2025-26", "All", car_parts=CarParts.common([CarHarness.hyundai_n]))],
     CarSpecs(mass=1850, wheelbase=2.82, steerRatio=14.1, tireStiffnessFactor=0.65),
-    flags=HyundaiFlags.EV,
+    flags=HyundaiFlags.EV | HyundaiFlags.CANFD_ANGLE_STEERING,
   )
   KIA_EV6 = HyundaiCanFDPlatformConfig(
     [

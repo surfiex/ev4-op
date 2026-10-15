@@ -272,5 +272,69 @@ class TestHyundaiCanfdLFASteeringLongAltButtons(TestHyundaiCanfdLFASteeringLongB
     pass
 
 
+class TestHyundaiCanfdAngleSteering(HyundaiButtonBase, common.CarSafetyTest, common.AngleSteeringSafetyTest):
+
+  DBC = "hyundai_canfd_generated"
+  SAFETY_MODEL = CarParams.SafetyModel.hyundaiCanfd
+  SAFETY_PARAM = HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CAMERA_SCC | HyundaiSafetyFlags.CANFD_ANGLE_STEERING
+
+  TX_MSGS = [[0xCB, 0], [0x1A0, 0], [0x1CF, 2], [0x1E0, 0], [0x160, 0]]
+  STANDSTILL_THRESHOLD = 12  # 0.375 kph
+  RELAY_MALFUNCTION_ADDRS = {0: (0xCB, 0x1E0)}  # LFA_ALT, LFAHDA_CLUSTER
+  FWD_BLACKLISTED_ADDRS = {2: [0xCB, 0x1E0]}
+
+  PT_BUS = 0
+  SCC_BUS = 2
+  STEER_BUS = 0
+  BUTTONS_TX_BUS = 2
+
+  STEER_ANGLE_MAX = 120
+  DEG_TO_CAN = 10
+  ANGLE_RATE_BP = [0., 5., 25.]
+  ANGLE_RATE_UP = [1.0, 0.8, 0.2]
+  ANGLE_RATE_DOWN = [1.5, 1.0, 0.3]
+
+  def _angle_cmd_msg(self, angle: float, enabled: bool):
+    values = {"ADAS_StrAnglReqVal": angle, "ADAS_ActvACILvl2Sta": 2 if enabled else 1}
+    return self.packer.make_can_msg_safety("LFA_ALT", self.STEER_BUS, values)
+
+  def _angle_meas_msg(self, angle: float):
+    values = {"STEERING_ANGLE": angle}
+    return self.packer.make_can_msg_safety("STEERING_SENSORS", self.PT_BUS, values)
+
+  def _vehicle_moving_msg(self, speed: float):
+    values = {f"WHL_Spd{pos}Val": speed * 0.03125 for pos in ["FL", "FR", "RL", "RR"]}
+    return self.packer.make_can_msg_safety("WHEEL_SPEEDS", self.PT_BUS, values)
+
+  def _speed_msg(self, speed):
+    values = {f"WHL_Spd{pos}Val": speed * 3.6 for pos in ["FL", "FR", "RL", "RR"]}
+    return self.packer.make_can_msg_safety("WHEEL_SPEEDS", self.PT_BUS, values)
+
+  def _user_brake_msg(self, brake):
+    values = {"DriverBraking": brake}
+    return self.packer.make_can_msg_safety("TCS", self.PT_BUS, values)
+
+  def _user_gas_msg(self, gas):
+    values = {"ACCELERATOR_PEDAL": gas}
+    return self.packer.make_can_msg_safety("ACCELERATOR", self.PT_BUS, values)
+
+  def _pcm_status_msg(self, enable):
+    values = {"ACCMode": 1 if enable else 0}
+    return self.packer.make_can_msg_safety("SCC_CONTROL", self.SCC_BUS, values)
+
+  def _button_msg(self, buttons, main_button=0, bus=None):
+    if bus is not None:
+      values = {
+        "CRUISE_BUTTONS": buttons,
+        "ADAPTIVE_CRUISE_MAIN_BTN": main_button,
+      }
+      return self.packer.make_can_msg_safety("CRUISE_BUTTONS", bus, values)
+    values = {
+      "CRUISE_BUTTONS": buttons,
+      "ADAPTIVE_CRUISE_MAIN_BTN": main_button,
+    }
+    return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT_2", self.PT_BUS, values)
+
+
 if __name__ == "__main__":
   unittest.main()
