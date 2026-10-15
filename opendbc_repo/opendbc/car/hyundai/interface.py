@@ -42,7 +42,8 @@ class CarInterface(CarInterfaceBase):
         # this needs to be figured out for cars without an ADAS ECU
         ret.alphaLongitudinalAvailable = False
 
-      if 0x1ba in fingerprint[CAN.ECAN]:
+      bsm_can = CAN.CAM if candidate == CAR.KIA_EV4 else CAN.ECAN
+      if 0x1ba in fingerprint[bsm_can]:
         ret.flags |= HyundaiFlags.HAS_BSM.value
 
       # Check if the car is hybrid. Only HEV/PHEV cars have 0xFA on E-CAN.

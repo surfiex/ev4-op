@@ -254,8 +254,9 @@ class CarState(CarStateBase):
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl[blinker_msg][left_blinker_sig],
                                                                       cp.vl[blinker_msg][right_blinker_sig])
     if self.CP.flags & HyundaiFlags.HAS_BSM:
-      ret.leftBlindspot = bool(cp.vl["ADAS_CMD_50_50ms"]["BCW_LtIndSta"])
-      ret.rightBlindspot = bool(cp.vl["ADAS_CMD_50_50ms"]["BCW_RtIndSta"])
+      cp_bsm = cp_cam if self.CP.carFingerprint == CAR.KIA_EV4 else cp
+      ret.leftBlindspot = bool(cp_bsm.vl["ADAS_CMD_50_50ms"]["BCW_LtIndSta"])
+      ret.rightBlindspot = bool(cp_bsm.vl["ADAS_CMD_50_50ms"]["BCW_RtIndSta"])
 
     # cruise state
     # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
