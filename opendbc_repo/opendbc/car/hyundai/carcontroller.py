@@ -184,9 +184,9 @@ class CarController(CarControllerBase):
 
     # steering control
     can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled, apply_steer_req,
-                                                           apply_torque, self.apply_angle_last, CC.latActive))
+                                                           apply_torque, self.apply_angle_last, CC.latActive, CS.lkas_alt_cam_info))
 
-    if self.CP.flags & HyundaiFlags.CANFD_ANGLE_STEERING:
+    if (self.CP.flags & HyundaiFlags.CANFD_ANGLE_STEERING) and not lka_steering:
       can_sends.append(hyundaicanfd.create_mdps_cam(self.packer, self.CAN, self.frame, CS.mdps_info, CS.lfa_alt_cam_info))
       if self.frame % 5 == 0:
         can_sends.append(hyundaicanfd.create_ccnc_161(self.packer, self.CAN, CS.ccnc_161_info, CC.enabled, CC.latActive))

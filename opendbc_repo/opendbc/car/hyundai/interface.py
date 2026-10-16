@@ -34,7 +34,7 @@ class CarInterface(CarInterfaceBase):
       # that finally retransmits our steering command in LFA or LFA_ALT to the MDPS.
       # "LFA steering" if camera directly sends LFA to the MDPS
       cam_can = CanBus(None, fingerprint).CAM
-      lka_steering = (0x50 in fingerprint[cam_can] or 0x110 in fingerprint[cam_can]) and not (ret.flags & HyundaiFlags.CANFD_ANGLE_STEERING)
+      lka_steering = 0x50 in fingerprint[cam_can] or 0x110 in fingerprint[cam_can]
       CAN = CanBus(None, fingerprint, lka_steering)
 
       ret.alphaLongitudinalAvailable = not (ret.flags & (HyundaiFlags.CANFD_NO_RADAR_DISABLE | HyundaiFlags.CANFD_ANGLE_STEERING))
@@ -42,7 +42,7 @@ class CarInterface(CarInterfaceBase):
         # this needs to be figured out for cars without an ADAS ECU
         ret.alphaLongitudinalAvailable = False
 
-      bsm_can = CAN.CAM if candidate == CAR.KIA_EV4 else CAN.ECAN
+      bsm_can = CAN.CAM if (candidate == CAR.KIA_EV4 and not lka_steering) else CAN.ECAN
       if 0x1ba in fingerprint[bsm_can]:
         ret.flags |= HyundaiFlags.HAS_BSM.value
 

@@ -158,11 +158,31 @@ BO_ 272 LKAS_ALT: 32 XXX
  SG_ LFA_BUTTON : 56|1@1+ (1,0) [0|255] "" XXX
  SG_ LKA_SysWrn : 60|4@1+ (1,0) [0|15] "" ADAS_DRV
  SG_ Damping_Gain : 64|8@1+ (1,0) [0|255] "" CGW
+ SG_ LKAS_BYTE9_LOW : 72|4@1+ (1,0) [0|15] "" XXX
  SG_ LKAS_ANGLE_ACTIVE : 77|2@0+ (1,0) [0|3] "" XXX
  SG_ LKA_UsmMod : 80|2@1+ (1,0) [0|3] "" ADAS_DRV
  SG_ ADAS_StrAnglReqVal : 82|14@1- (0.1,0) [0|176.7] "Deg" GW_RGW,MDPS,SFA
  SG_ ADAS_ACIAnglTqRedcGainVal : 96|8@1+ (0.004,0) [0|1] "" GW_RGW,MDPS,SFA
+ SG_ LKAS_BYTE13_LOW : 104|3@1+ (1,0) [0|7] "" XXX
  SG_ FCA_ESA_CtrlSta : 107|1@0+ (1,0) [0|1] "" XXX
+ SG_ BYTE14 : 112|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE15 : 120|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE16 : 128|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE17 : 136|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE18 : 144|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE19 : 152|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE20 : 160|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE21 : 168|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE22 : 176|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE23 : 184|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE24 : 192|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE25 : 200|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE26 : 208|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE27 : 216|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE28 : 224|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE29 : 232|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE30 : 240|8@1+ (1,0) [0|255] "" XXX
+ SG_ BYTE31 : 248|8@1+ (1,0) [0|255] "" XXX
 
 BO_ 282 FR_CMR_01_10ms: 16 FR_CMR
  SG_ FR_CMR_Crc1Val : 0|16@1+ (1,0) [0|0] "" Dummy,IBU_HS,vBDM

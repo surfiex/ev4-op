@@ -336,5 +336,24 @@ class TestHyundaiCanfdAngleSteering(HyundaiButtonBase, common.CarSafetyTest, com
     return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT_2", self.PT_BUS, values)
 
 
+class TestHyundaiCanfdLKASteeringAltAngle(TestHyundaiCanfdAngleSteering):
+
+  SAFETY_PARAM = (HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CANFD_LKA_STEER_MSG |
+                  HyundaiSafetyFlags.CANFD_LKA_STEER_MSG_ALT | HyundaiSafetyFlags.CANFD_ANGLE_STEERING)
+
+  TX_MSGS = [[0x110, 0], [0x1CF, 1], [0x362, 0], [0x1A0, 1]]
+  RELAY_MALFUNCTION_ADDRS = {0: (0x110, 0x362)}
+  FWD_BLACKLISTED_ADDRS = {2: [0x110, 0x362]}
+
+  PT_BUS = 1
+  SCC_BUS = 1
+  STEER_BUS = 0
+  BUTTONS_TX_BUS = 1
+
+  def _angle_cmd_msg(self, angle: float, enabled: bool):
+    values = {"ADAS_StrAnglReqVal": angle, "LKAS_ANGLE_ACTIVE": 2 if enabled else 1}
+    return self.packer.make_can_msg_safety("LKAS_ALT", self.STEER_BUS, values)
+
+
 if __name__ == "__main__":
   unittest.main()
