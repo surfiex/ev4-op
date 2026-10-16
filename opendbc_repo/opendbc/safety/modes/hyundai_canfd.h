@@ -22,6 +22,8 @@
 
 #define HYUNDAI_CANFD_ANGLE_STEERING_COMMON_TX_MSGS(e_can) \
   {0xCB,  e_can, 24, .check_relay = (e_can) == 0},  /* LFA_ALT */        \
+  {0xEA,  2,     24, .check_relay = true},          /* MDPS */           \
+  {0x161, e_can, 32, .check_relay = (e_can) == 0},  /* CCNC_0x161 */     \
   {0x1E0, e_can, 16, .check_relay = (e_can) == 0},  /* LFAHDA_CLUSTER */ \
 
 #define HYUNDAI_CANFD_SCC_CONTROL_COMMON_TX_MSGS(e_can, longitudinal) \

@@ -278,10 +278,10 @@ class TestHyundaiCanfdAngleSteering(HyundaiButtonBase, common.CarSafetyTest, com
   SAFETY_MODEL = CarParams.SafetyModel.hyundaiCanfd
   SAFETY_PARAM = HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CAMERA_SCC | HyundaiSafetyFlags.CANFD_ANGLE_STEERING
 
-  TX_MSGS = [[0xCB, 0], [0x1A0, 0], [0x1CF, 2], [0x1E0, 0], [0x160, 0]]
+  TX_MSGS = [[0xCB, 0], [0xEA, 2], [0x161, 0], [0x1A0, 0], [0x1CF, 2], [0x1E0, 0], [0x160, 0]]
   STANDSTILL_THRESHOLD = 12  # 0.375 kph
-  RELAY_MALFUNCTION_ADDRS = {0: (0xCB, 0x1E0)}  # LFA_ALT, LFAHDA_CLUSTER
-  FWD_BLACKLISTED_ADDRS = {2: [0xCB, 0x1E0]}
+  RELAY_MALFUNCTION_ADDRS = {0: (0xCB, 0x161, 0x1E0), 2: (0xEA,)}  # LFA_ALT, CCNC_0x161, LFAHDA_CLUSTER, MDPS
+  FWD_BLACKLISTED_ADDRS = {0: [0xEA], 2: [0xCB, 0x161, 0x1E0]}
 
   PT_BUS = 0
   SCC_BUS = 2

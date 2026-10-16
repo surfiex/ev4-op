@@ -132,6 +132,31 @@ def create_lfahda_cluster(packer, CAN, enabled):
   return packer.make_can_msg("LFAHDA_CLUSTER", CAN.ECAN, values)
 
 
+def create_mdps_cam(packer, CAN, frame, mdps_info, lfa_alt_cam_info):
+  values = {k: v for k, v in mdps_info.items() if k not in ("CHECKSUM", "COUNTER")}
+  cam_aci = lfa_alt_cam_info.get("ADAS_ActvACILvl2Sta", 0)
+  if cam_aci != 0:
+    values["MDPS_ADASAciActvSta_Lv2"] = cam_aci
+  values["MDPS_ADAS_AciFltSig_Lv2"] = 0
+  if cam_aci == 2:
+    values["MDPS_EstStrAnglVal"] = lfa_alt_cam_info.get("ADAS_StrAnglReqVal", 0)
+    if (frame // 100) % 5 == 0 and abs(values.get("MDPS_StrTqSnsrVal", 0)) < 120:
+      values["MDPS_StrTqSnsrVal"] = 120
+  return packer.make_can_msg("MDPS", CAN.CAM, values)
+
+
+def create_ccnc_161(packer, CAN, ccnc_161_info, enabled, lat_active):
+  values = {k: v for k, v in ccnc_161_info.items() if k not in ("CHECKSUM", "COUNTER")}
+  if enabled:
+    values["LFA_ICON"] = 2 if lat_active else 1
+    values["CENTERLINE"] = 1 if lat_active else 0
+    values["ALERTS_2"] = 0
+    values["SOUNDS_2"] = 0
+    if values.get("LKA_ICON", 0) in (0, 1):
+      values["LKA_ICON"] = 3
+  return packer.make_can_msg("CCNC_0x161", CAN.ECAN, values)
+
+
 def create_acc_control(packer, CAN, enabled, accel_last, accel, stopping, gas_override, set_speed, hud_control):
   jerk = 5
   jn = jerk / 50

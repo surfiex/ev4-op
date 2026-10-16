@@ -57,6 +57,10 @@ class CarState(CarStateBase):
     self.buttons_counter = 0
 
     self.cruise_info = {}
+    self.lfa_block_msg = {}
+    self.mdps_info = {}
+    self.lfa_alt_cam_info = {}
+    self.ccnc_161_info = {}
 
     # On some cars, CLU15->CF_Clu_VehicleSpeed can oscillate faster than the dash updates. Sample at 5 Hz
     self.cluster_speed = 0
@@ -293,6 +297,11 @@ class CarState(CarStateBase):
     if self.CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG:
       self.lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG_ALT
                                           else cp_cam.vl["CAM_0x2a4"])
+
+    if self.CP.flags & HyundaiFlags.CANFD_ANGLE_STEERING:
+      self.mdps_info = copy.copy(cp.vl["MDPS"])
+      self.lfa_alt_cam_info = copy.copy(cp_cam.vl["LFA_ALT"])
+      self.ccnc_161_info = copy.copy(cp_cam.vl["CCNC_0x161"])
 
     ret.buttonEvents = [*create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
                         *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.mainCruise}),
